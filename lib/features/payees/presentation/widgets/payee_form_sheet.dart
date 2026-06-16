@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../core/utils/iban_validator.dart';
@@ -53,6 +53,7 @@ class _PayeeFormSheetState extends ConsumerState<PayeeFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -72,7 +73,7 @@ class _PayeeFormSheetState extends ConsumerState<PayeeFormSheet> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

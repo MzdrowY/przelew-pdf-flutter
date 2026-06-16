@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme_colors.dart';
+import '../../../core/theme/app_theme_mode.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -30,7 +31,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final settings = ref.watch(settingsStateProvider);
+    final themeMode = ref.watch(appThemeModeProvider);
 
     if (!_initialized) {
       _nazwaCtrl.text = settings['nazwa'] as String? ?? '';
@@ -49,13 +52,35 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text('Wygląd', style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<AppThemeMode>(
+                  initialValue: themeMode,
+                  decoration: InputDecoration(
+                    labelText: 'Motyw',
+                    filled: true,
+                    fillColor: colors.field,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  items: AppThemeMode.values.map((mode) {
+                    return DropdownMenuItem(
+                      value: mode,
+                      child: Text(mode.label),
+                    );
+                  }).toList(),
+                  onChanged: (mode) {
+                    if (mode == null) return;
+                    ref.read(settingsStateProvider.notifier).update({'theme_mode': mode.key});
+                  },
+                ),
+                const SizedBox(height: 24),
                 Text('Zleceniodawca', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 16),
                 SwitchListTile(
                   title: const Text('Wpłata gotówkowa'),
                   subtitle: const Text('Bez konta – kwota słownie'),
                   value: _wplataGotowkowa,
-                  activeTrackColor: AppColors.primary,
+                  activeTrackColor: colors.primary,
                   onChanged: (v) => setState(() => _wplataGotowkowa = v),
                 ),
                 const SizedBox(height: 8),

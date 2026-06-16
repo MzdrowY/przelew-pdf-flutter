@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 class AppButton extends StatelessWidget {
   final String label;
@@ -25,24 +25,27 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final foreground = colors.isDark ? Colors.white : Colors.white;
+
     final child = isLoading
-        ? const SizedBox(
+        ? SizedBox(
             height: 18,
             width: 18,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            child: CircularProgressIndicator(strokeWidth: 2, color: foreground),
           )
         : Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 16, color: Colors.white),
+                Icon(icon, size: 16, color: foreground),
                 const SizedBox(width: 8),
               ],
-              Text(label, style: const TextStyle(
+              Text(label, style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: foreground,
                 letterSpacing: 0.3,
               )),
             ],
@@ -51,20 +54,18 @@ class AppButton extends StatelessWidget {
     final button = gradient && !isOutlined
         ? Container(
             decoration: BoxDecoration(
-              gradient: AppColors.gradientPrimary.colors.isNotEmpty
-                  ? const LinearGradient(
-                      colors: [Color(0xFF7C75FF), Color(0xFF6C63FF)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    )
-                  : null,
+              gradient: LinearGradient(
+                colors: [colors.primary, colors.primaryGlow],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
               borderRadius: BorderRadius.circular(12),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x337C75FF),
+                  color: colors.primary.withValues(alpha: colors.isDark ? 0.20 : 0.35),
                   blurRadius: 12,
                   spreadRadius: -2,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -86,7 +87,7 @@ class AppButton extends StatelessWidget {
             ? OutlinedButton(
                 onPressed: isLoading ? null : onPressed,
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF7C75FF), width: 1.5),
+                  side: BorderSide(color: colors.primary, width: 1.5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   minimumSize: Size(44, height),

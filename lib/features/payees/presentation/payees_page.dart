@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme_colors.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../domain/payee_notifier.dart';
 import '../data/payee_model.dart';
@@ -12,6 +12,7 @@ class PayeesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
     final payees = ref.watch(payeeStateProvider);
     final aliases = payees.keys.toList()..sort();
 
@@ -30,7 +31,7 @@ class PayeesPage extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.people_outline, size: 64, color: AppColors.textTertiary),
+                  Icon(Icons.people_outline, size: 64, color: colors.textTertiary),
                   const SizedBox(height: 16),
                   Text('Brak odbiorców', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
@@ -46,8 +47,9 @@ class PayeesPage extends ConsumerWidget {
                 final payee = payees[alias]!;
                 return _PayeeTile(
                   payee: payee,
+                  colors: colors,
                   onEdit: () => _showForm(context, ref, payee: payee),
-                  onDelete: () => _confirmDelete(context, ref, payee),
+                  onDelete: () => _confirmDelete(context, ref, payee, colors),
                 );
               },
             ),
@@ -59,16 +61,16 @@ class PayeesPage extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.appColors.surface,
       builder: (_) => PayeeFormSheet(existing: payee),
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, PayeeModel payee) {
+  void _confirmDelete(BuildContext context, WidgetRef ref, PayeeModel payee, AppThemeColors colors) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         title: const Text('Usunąć odbiorcę?'),
         content: Text('Czy na pewno usunąć "${payee.alias}"?'),
         actions: [
@@ -81,7 +83,7 @@ class PayeesPage extends ConsumerWidget {
               ref.read(payeeStateProvider.notifier).delete(payee.alias);
               Navigator.pop(ctx);
             },
-            child: Text('Usuń', style: TextStyle(color: AppColors.error)),
+            child: Text('Usuń', style: TextStyle(color: colors.error)),
           ),
         ],
       ),
@@ -91,11 +93,13 @@ class PayeesPage extends ConsumerWidget {
 
 class _PayeeTile extends StatelessWidget {
   final PayeeModel payee;
+  final AppThemeColors colors;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _PayeeTile({
     required this.payee,
+    required this.colors,
     required this.onEdit,
     required this.onDelete,
   });
@@ -112,14 +116,14 @@ class _PayeeTile extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.15),
+                color: colors.primary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
                 child: Text(
                   payee.alias.substring(0, 1),
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: colors.primary,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -144,12 +148,12 @@ class _PayeeTile extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.edit_outlined, size: 20),
               onPressed: onEdit,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             IconButton(
               icon: const Icon(Icons.delete_outline, size: 20),
               onPressed: onDelete,
-              color: AppColors.error,
+              color: colors.error,
             ),
           ],
         ),

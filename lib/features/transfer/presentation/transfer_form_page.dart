@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme_colors.dart';
 import '../../../core/utils/iban_validator.dart';
 import '../../../shared/widgets/accent_card.dart';
 import '../../../shared/widgets/side_rail.dart';
@@ -78,12 +78,12 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final settings = ref.watch(settingsStateProvider);
     final history = ref.watch(historyListProvider);
     _initSender(settings);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A14),
       body: Row(
         children: [
           SideRail(
@@ -98,32 +98,32 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
           ),
           Expanded(
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xFF0A0A14), Color(0xFF12121E), Color(0xFF0A0A14)],
+                  colors: [colors.backgroundTop, colors.surface, colors.backgroundTop],
                 ),
               ),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                 children: [
-                  _buildHeader(context),
+                  _buildHeader(context, colors),
                   const SizedBox(height: 8),
-                  _buildSenderSection(),
+                  _buildSenderSection(colors),
                   const SizedBox(height: 12),
-                  _buildPayeeSection(),
+                  _buildPayeeSection(colors),
                   const SizedBox(height: 12),
-                  _buildDetailsSection(),
+                  _buildDetailsSection(colors),
                   const SizedBox(height: 12),
                   const CalibrationSection(),
                   const SizedBox(height: 12),
-                  _buildOptionsSection(),
+                  _buildOptionsSection(colors),
                   const SizedBox(height: 16),
-                  _buildGenerateButton(),
+                  _buildGenerateButton(colors),
                   if (history.isNotEmpty) ...[
                     const SizedBox(height: 20),
-                    _buildHistorySection(history),
+                    _buildHistorySection(history, colors),
                   ],
                 ],
               ),
@@ -134,25 +134,25 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, AppThemeColors colors) {
     return Container(
       padding: const EdgeInsets.only(top: 16, bottom: 12),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border, width: .5)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: colors.border, width: .5)),
       ),
       child: Row(
         children: [
           Container(
             width: 32, height: 32,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF7C75FF), Color(0xFF5A54CC)]),
+              gradient: LinearGradient(colors: [colors.primary, colors.primaryGlow]),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.account_balance, size: 18, color: Colors.white),
           ),
           const SizedBox(width: 10),
-          const Text('Polecenie przelewu PDF', style: TextStyle(
-            fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -.3,
+          Text('Polecenie przelewu PDF', style: TextStyle(
+            fontSize: 16, fontWeight: FontWeight.w700, color: colors.textPrimary, letterSpacing: -.3,
           )),
           const Spacer(),
         ],
@@ -160,33 +160,41 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
     );
   }
 
-  Widget _buildSenderSection() {
+  Widget _buildSenderSection(AppThemeColors colors) {
     return AccentCard(
-      accentColor: const Color(0xFF4ECDC4),
+      accentColor: colors.accent,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _sectionHeader(Icons.person_outline, 'Zleceniodawca', _senderToggle()),
+        _sectionHeader(Icons.person_outline, 'Zleceniodawca', colors, _senderToggle(colors)),
         const SizedBox(height: 12),
-        _field(Icons.account_circle_outlined, 'Nazwa', _senderNazwaCtrl, onChanged: (_) => _saveSender()),
+        _field(Icons.account_circle_outlined, 'Nazwa', _senderNazwaCtrl, colors, onChanged: (_) => _saveSender()),
         const SizedBox(height: 8),
-        _field(Icons.location_on_outlined, 'Adres', _senderAdresCtrl, maxLines: 2, onChanged: (_) => _saveSender()),
-        if (!_wplataGotowkowa) ...[const SizedBox(height: 8), _field(Icons.account_balance_outlined, 'Nr konta', _senderKontoCtrl, onChanged: (_) => _saveSender())],
+        _field(Icons.location_on_outlined, 'Adres', _senderAdresCtrl, colors, maxLines: 2, onChanged: (_) => _saveSender()),
+        if (!_wplataGotowkowa) ...[const SizedBox(height: 8), _field(Icons.account_balance_outlined, 'Nr konta', _senderKontoCtrl, colors, onChanged: (_) => _saveSender())],
       ]),
     );
   }
 
-  Widget _buildPayeeSection() {
+  Widget _buildPayeeSection(AppThemeColors colors) {
     final payees = ref.watch(payeeStateProvider);
     final aliases = payees.keys.toList()..sort();
     return AccentCard(
-      accentColor: const Color(0xFF7C75FF),
+      accentColor: colors.primary,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _sectionHeader(Icons.people_alt_outlined, 'Odbiorca', TextButton(onPressed: () => context.push('/payees'), child: const Text('Edytuj', style: TextStyle(fontSize: 11)))),
+        _sectionHeader(Icons.people_alt_outlined, 'Odbiorca', colors, TextButton(onPressed: () => context.push('/payees'), child: const Text('Edytuj', style: TextStyle(fontSize: 11)))),
         const SizedBox(height: 12),
         if (aliases.isNotEmpty)
           DropdownButtonFormField<String>(
-            decoration: const InputDecoration(labelText: 'Wybierz z bazy', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
-            dropdownColor: const Color(0xFF1C1C2A), isDense: true,
-            items: aliases.map((a) => DropdownMenuItem(value: a, child: Text(a, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary)))).toList(),
+            decoration: InputDecoration(
+              labelText: 'Wybierz z bazy',
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              filled: true,
+              fillColor: colors.field,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+            ),
+            dropdownColor: colors.surface, isDense: true,
+            style: TextStyle(fontSize: 13, color: colors.textPrimary),
+            items: aliases.map((a) => DropdownMenuItem(value: a, child: Text(a, style: TextStyle(fontSize: 13, color: colors.textPrimary)))).toList(),
             onChanged: (alias) {
               if (alias == null) return; final p = payees[alias]; if (p == null) return;
               _odbiorcaCtrl.text = p.odbiorca; _odbiorcaCdCtrl.text = p.odbiorcaCd; _kontoCtrl.text = p.konto;
@@ -198,42 +206,42 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
     );
   }
 
-  Widget _buildDetailsSection() {
+  Widget _buildDetailsSection(AppThemeColors colors) {
     return AccentCard(
       accentColor: const Color(0xFFFFA07A),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _sectionHeader(Icons.receipt_long_outlined, 'Szczegóły przelewu', TextButton(onPressed: _clearAll, child: const Text('Wyczyść', style: TextStyle(fontSize: 11)))),
+        _sectionHeader(Icons.receipt_long_outlined, 'Szczegóły przelewu', colors, TextButton(onPressed: _clearAll, child: const Text('Wyczyść', style: TextStyle(fontSize: 11)))),
         const SizedBox(height: 12),
-        _field(Icons.person_outline, 'Odbiorca (linia 1)', _odbiorcaCtrl),
+        _field(Icons.person_outline, 'Odbiorca (linia 1)', _odbiorcaCtrl, colors),
         const SizedBox(height: 8),
-        _field(null, 'Odbiorca (linia 2)', _odbiorcaCdCtrl),
+        _field(null, 'Odbiorca (linia 2)', _odbiorcaCdCtrl, colors),
         const SizedBox(height: 8),
-        _field(Icons.credit_card_outlined, 'Nr konta', _kontoCtrl, onChanged: _formatIban),
+        _field(Icons.credit_card_outlined, 'Nr konta', _kontoCtrl, colors, onChanged: _formatIban),
         const SizedBox(height: 8),
         Row(children: [
-          Expanded(flex: 1, child: _field(Icons.currency_exchange_outlined, 'Waluta', _walutaCtrl)),
+          Expanded(flex: 1, child: _field(Icons.currency_exchange_outlined, 'Waluta', _walutaCtrl, colors)),
           const SizedBox(width: 8),
-          Expanded(flex: 2, child: _field(Icons.payments_outlined, 'Kwota', _kwotaCtrl)),
+          Expanded(flex: 2, child: _field(Icons.payments_outlined, 'Kwota', _kwotaCtrl, colors)),
         ]),
         const SizedBox(height: 8),
-        _field(Icons.subject_outlined, 'Tytułem (linia 1)', _tytul1Ctrl),
+        _field(Icons.subject_outlined, 'Tytułem (linia 1)', _tytul1Ctrl, colors),
         const SizedBox(height: 8),
-        _field(null, 'Tytułem (linia 2)', _tytul2Ctrl),
+        _field(null, 'Tytułem (linia 2)', _tytul2Ctrl, colors),
         const SizedBox(height: 8),
         Row(children: [
-          Expanded(child: _actionBtn(Icons.bookmark_outline, 'Zapisz odbiorcę', _odbiorcaCtrl.text.trim().isNotEmpty ? _quickSavePayee : null)),
+          Expanded(child: _actionBtn(Icons.bookmark_outline, 'Zapisz odbiorcę', colors, _odbiorcaCtrl.text.trim().isNotEmpty ? _quickSavePayee : null)),
           const SizedBox(width: 8),
-          Expanded(child: _actionBtn(Icons.preview_outlined, 'Podgląd', () => _validateAndProceed(context, ref.read(transferFormProvider)))),
+          Expanded(child: _actionBtn(Icons.preview_outlined, 'Podgląd', colors, () => _validateAndProceed(context, ref.read(transferFormProvider), colors))),
         ]),
       ]),
     );
   }
 
-  Widget _buildOptionsSection() {
+  Widget _buildOptionsSection(AppThemeColors colors) {
     return AccentCard(
-      accentColor: const Color(0xFF9D97FF),
+      accentColor: colors.primarySoft,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _sectionHeader(Icons.print_outlined, 'Opcje wydruku'),
+        _sectionHeader(Icons.print_outlined, 'Opcje wydruku', colors),
         const SizedBox(height: 12),
         Row(children: ['Oba odcinki', 'Górny', 'Dolny'].asMap().entries.map((e) {
           final map = {'Oba odcinki': 'oba', 'Górny': 'gorny', 'Dolny': 'dolny'};
@@ -245,13 +253,13 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
                 margin: EdgeInsets.only(right: e.key < 2 ? 8 : 0),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: sel ? AppColors.primary.withValues(alpha: .12) : const Color(0xFF151522),
+                  color: sel ? colors.primary.withValues(alpha: .12) : colors.field,
                   borderRadius: BorderRadius.circular(10),
-                  border: sel ? Border.all(color: AppColors.primary.withValues(alpha: .4)) : Border.all(color: AppColors.border.withValues(alpha: .3)),
+                  border: sel ? Border.all(color: colors.primary.withValues(alpha: .4)) : Border.all(color: colors.border.withValues(alpha: .3)),
                 ),
                 child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon(sel ? Icons.check_circle : Icons.radio_button_unchecked, size: 14, color: sel ? AppColors.primarySoft : AppColors.textTertiary),
-                  const SizedBox(width: 4), Text(e.value, style: TextStyle(fontSize: 11, fontWeight: sel ? FontWeight.w600 : FontWeight.w400, color: sel ? AppColors.primarySoft : AppColors.textSecondary)),
+                  Icon(sel ? Icons.check_circle : Icons.radio_button_unchecked, size: 14, color: sel ? colors.primarySoft : colors.textTertiary),
+                  const SizedBox(width: 4), Text(e.value, style: TextStyle(fontSize: 11, fontWeight: sel ? FontWeight.w600 : FontWeight.w400, color: sel ? colors.primarySoft : colors.textSecondary)),
                 ]),
               ),
             ),
@@ -261,17 +269,17 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
     );
   }
 
-  Widget _buildGenerateButton() {
+  Widget _buildGenerateButton(AppThemeColors colors) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        gradient: const LinearGradient(colors: [Color(0xFF7C75FF), Color(0xFF6C63FF)]),
-        boxShadow: [BoxShadow(color: const Color(0xFF7C75FF).withValues(alpha: .30), blurRadius: 24, offset: const Offset(0, 6))],
+        gradient: LinearGradient(colors: [colors.primary, colors.primaryGlow]),
+        boxShadow: [BoxShadow(color: colors.primary.withValues(alpha: .30), blurRadius: 24, offset: const Offset(0, 6))],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _validateAndProceed(context, ref.read(transferFormProvider)),
+          onTap: () => _validateAndProceed(context, ref.read(transferFormProvider), colors),
           borderRadius: BorderRadius.circular(14),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -286,20 +294,20 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
     );
   }
 
-  Widget _buildHistorySection(List<Map<String, String>> history) {
+  Widget _buildHistorySection(List<Map<String, String>> history, AppThemeColors colors) {
     return AccentCard(
-      accentColor: const Color(0xFF34B78F),
+      accentColor: colors.success,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _sectionHeader(Icons.access_time, 'Ostatnie przelewy'),
+        _sectionHeader(Icons.access_time, 'Ostatnie przelewy', colors),
         const SizedBox(height: 12),
         ...history.take(5).map((e) => Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFF181828), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border.withValues(alpha: .2))),
+          decoration: BoxDecoration(color: colors.field, borderRadius: BorderRadius.circular(10), border: Border.all(color: colors.border.withValues(alpha: .2))),
           child: Row(children: [
-            SizedBox(width: 70, child: Text(e['data'] ?? '', style: TextStyle(fontSize: 11, color: AppColors.textTertiary))),
-            Expanded(child: Text(e['odbiorca'] ?? '', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis, maxLines: 1)),
-            Text(e['kwota'] ?? '', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF34B78F))),
+            SizedBox(width: 70, child: Text(e['data'] ?? '', style: TextStyle(fontSize: 11, color: colors.textTertiary))),
+            Expanded(child: Text(e['odbiorca'] ?? '', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: colors.textPrimary), overflow: TextOverflow.ellipsis, maxLines: 1)),
+            Text(e['kwota'] ?? '', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.success)),
           ]),
         )),
       ]),
@@ -307,57 +315,57 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
   }
 
   // ---------- HELPERS ----------
-  Widget _sectionHeader(IconData icon, String label, [Widget? trailing]) {
+  Widget _sectionHeader(IconData icon, String label, AppThemeColors colors, [Widget? trailing]) {
     return Row(children: [
-      Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: .10), borderRadius: BorderRadius.circular(8)), child: Icon(icon, size: 18, color: AppColors.primarySoft)),
+      Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: colors.primary.withValues(alpha: .10), borderRadius: BorderRadius.circular(8)), child: Icon(icon, size: 18, color: colors.primarySoft)),
       const SizedBox(width: 10),
-      Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+      Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary)),
       if (trailing != null) ...[const Spacer(), trailing],
     ]);
   }
 
-  Widget _field(IconData? icon, String label, TextEditingController ctrl, {int maxLines = 1, void Function(String)? onChanged, TextInputType? keyboardType}) {
+  Widget _field(IconData? icon, String label, TextEditingController ctrl, AppThemeColors colors, {int maxLines = 1, void Function(String)? onChanged, TextInputType? keyboardType}) {
     return TextFormField(
       controller: ctrl, maxLines: maxLines, onChanged: onChanged, keyboardType: keyboardType,
-      style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+      style: TextStyle(fontSize: 13, color: colors.textPrimary),
       decoration: InputDecoration(
-        labelText: label, isDense: true, filled: true, fillColor: const Color(0xFF13131F),
+        labelText: label, isDense: true, filled: true, fillColor: colors.field,
         contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-        prefixIcon: icon != null ? Padding(padding: const EdgeInsets.only(left: 8, right: 4), child: Icon(icon, size: 18, color: AppColors.textTertiary)) : null,
+        prefixIcon: icon != null ? Padding(padding: const EdgeInsets.only(left: 8, right: 4), child: Icon(icon, size: 18, color: colors.textTertiary)) : null,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2A2A3E), width: 1)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF7C75FF), width: 1.5)),
-        labelStyle: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.border, width: 1)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.primary, width: 1.5)),
+        labelStyle: TextStyle(fontSize: 12, color: colors.textTertiary),
       ),
     );
   }
 
-  Widget _senderToggle() {
+  Widget _senderToggle(AppThemeColors colors) {
     return GestureDetector(
       onTap: () { setState(() => _wplataGotowkowa = !_wplataGotowkowa); _saveSender(); },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: _wplataGotowkowa ? const Color(0xFF151522) : AppColors.primary.withValues(alpha: .15),
+          color: _wplataGotowkowa ? colors.field : colors.primary.withValues(alpha: .15),
           borderRadius: BorderRadius.circular(20),
-          border: _wplataGotowkowa ? Border.all(color: AppColors.border.withValues(alpha: .3)) : Border.all(color: AppColors.primary.withValues(alpha: .3)),
+          border: _wplataGotowkowa ? Border.all(color: colors.border.withValues(alpha: .3)) : Border.all(color: colors.primary.withValues(alpha: .3)),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(_wplataGotowkowa ? Icons.money : Icons.account_balance, size: 14, color: _wplataGotowkowa ? AppColors.textTertiary : AppColors.primarySoft),
-          const SizedBox(width: 4), Text(_wplataGotowkowa ? 'Gotówka' : 'Przelew', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _wplataGotowkowa ? AppColors.textTertiary : AppColors.primarySoft)),
+          Icon(_wplataGotowkowa ? Icons.money : Icons.account_balance, size: 14, color: _wplataGotowkowa ? colors.textTertiary : colors.primarySoft),
+          const SizedBox(width: 4), Text(_wplataGotowkowa ? 'Gotówka' : 'Przelew', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _wplataGotowkowa ? colors.textTertiary : colors.primarySoft)),
         ]),
       ),
     );
   }
 
-  Widget _actionBtn(IconData icon, String label, VoidCallback? onTap) {
+  Widget _actionBtn(IconData icon, String label, AppThemeColors colors, VoidCallback? onTap) {
     final enabled = onTap != null;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(color: enabled ? const Color(0xFF151522) : const Color(0xFF0F0F1A), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border.withValues(alpha: enabled ? .4 : .1))),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 16, color: enabled ? AppColors.primarySoft : AppColors.textTertiary), const SizedBox(width: 6), Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: enabled ? AppColors.textPrimary : AppColors.textTertiary))]),
+        decoration: BoxDecoration(color: enabled ? colors.field : colors.backgroundTop, borderRadius: BorderRadius.circular(10), border: Border.all(color: colors.border.withValues(alpha: enabled ? .4 : .1))),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 16, color: enabled ? colors.primarySoft : colors.textTertiary), const SizedBox(width: 6), Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: enabled ? colors.textPrimary : colors.textTertiary))]),
       ),
     );
   }
@@ -381,7 +389,7 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Odbiorca "$alias" zapisany', style: const TextStyle(fontSize: 12)), duration: const Duration(seconds: 2)));
   }
 
-  void _validateAndProceed(BuildContext context, TransferFormState form) {
+  void _validateAndProceed(BuildContext context, TransferFormState form, AppThemeColors colors) {
     final errors = <String>[];
     if (form.odbiorca.trim().isEmpty) errors.add('Brak nazwy odbiorcy');
     final kontoRaw = form.konto.replaceAll(RegExp(r'\s+'), '');
@@ -391,7 +399,7 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
       if (!valid) { errors.add('Niepoprawny numer konta (26 cyfr)'); } else if (!IbanValidator.checkMod97(clean)) { errors.add('Cyfra kontrolna IBAN jest niepoprawna'); }
     }
     if (form.tytul1.trim().isEmpty && form.tytul2.trim().isEmpty) errors.add('Brak tytułu przelewu');
-    if (errors.isNotEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errors.join('\n'), style: const TextStyle(fontSize: 12)), backgroundColor: AppColors.error, duration: const Duration(seconds: 4))); return; }
+    if (errors.isNotEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errors.join('\n'), style: const TextStyle(fontSize: 12)), backgroundColor: colors.error, duration: const Duration(seconds: 4))); return; }
     HapticFeedback.mediumImpact();
     context.push('/preview');
   }

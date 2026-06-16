@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/glass_card.dart';
 import '../../../settings/domain/settings_notifier.dart';
 
@@ -16,6 +16,7 @@ class _CalibrationSectionState extends ConsumerState<CalibrationSection> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final settings = ref.watch(settingsStateProvider);
     final notifier = ref.read(settingsStateProvider.notifier);
 
@@ -37,43 +38,48 @@ class _CalibrationSectionState extends ConsumerState<CalibrationSection> {
                   Icon(
                     _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                     size: 18,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                 ],
               ),
             ),
           ),
           if (_expanded) ...[
-            const Divider(height: 1),
+            Divider(height: 1, color: colors.border),
             const SizedBox(height: 10),
             _SliderRow(
               label: 'Przesunięcie X',
               value: (settings['shift_x'] as num?)?.toDouble() ?? -2.0,
               min: -10, max: 10,
+              colors: colors,
               onChanged: (v) => notifier.update({'shift_x': v}),
             ),
             _SliderRow(
               label: 'Przesunięcie Y',
               value: (settings['shift_y'] as num?)?.toDouble() ?? -1.0,
               min: -10, max: 10,
+              colors: colors,
               onChanged: (v) => notifier.update({'shift_y': v}),
             ),
             _SliderRow(
               label: 'Rozmiar fontu',
               value: (settings['font_size'] as num?)?.toDouble() ?? 11,
               min: 6, max: 20,
+              colors: colors,
               onChanged: (v) => notifier.update({'font_size': v}),
             ),
             _SliderRow(
               label: 'Offset Y',
               value: (settings['offset_y'] as num?)?.toDouble() ?? 3.5,
               min: -10, max: 20,
+              colors: colors,
               onChanged: (v) => notifier.update({'offset_y': v}),
             ),
             _SliderRow(
               label: 'Szer. komórki',
               value: (settings['cell_w'] as num?)?.toDouble() ?? 5.0,
               min: 1, max: 10,
+              colors: colors,
               onChanged: (v) => notifier.update({'cell_w': v}),
             ),
             const SizedBox(height: 4),
@@ -89,6 +95,7 @@ class _SliderRow extends StatelessWidget {
   final double value;
   final double min;
   final double max;
+  final AppThemeColors colors;
   final ValueChanged<double> onChanged;
 
   const _SliderRow({
@@ -96,6 +103,7 @@ class _SliderRow extends StatelessWidget {
     required this.value,
     required this.min,
     required this.max,
+    required this.colors,
     required this.onChanged,
   });
 
@@ -115,17 +123,17 @@ class _SliderRow extends StatelessWidget {
                 Text(value.toStringAsFixed(1), style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: colors.primary,
                 )),
               ],
             ),
           ),
           SliderTheme(
             data: SliderThemeData(
-              activeTrackColor: AppColors.primary,
-              inactiveTrackColor: AppColors.border,
-              thumbColor: AppColors.primary.withValues(alpha: 0.8),
-              overlayColor: AppColors.primary.withValues(alpha: 0.08),
+              activeTrackColor: colors.primary,
+              inactiveTrackColor: colors.border,
+              thumbColor: colors.primary.withValues(alpha: 0.8),
+              overlayColor: colors.primary.withValues(alpha: 0.08),
               trackHeight: 3,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),

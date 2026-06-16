@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 class AccentCard extends StatelessWidget {
   final Widget child;
@@ -15,12 +15,13 @@ class AccentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = accentColor ?? AppColors.primarySoft;
+    final colors = context.appColors;
+    final accent = accentColor ?? colors.primarySoft;
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF13131F),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border.withValues(alpha: .5), width: 1),
+        border: Border.all(color: colors.border.withValues(alpha: .5), width: 1),
       ),
       child: IntrinsicHeight(
         child: Row(

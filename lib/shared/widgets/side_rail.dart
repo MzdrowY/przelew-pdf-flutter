@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 class SideRail extends StatelessWidget {
   final List<NavItem> items;
@@ -15,11 +15,13 @@ class SideRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Container(
       width: 56,
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F0F1A),
-        border: Border(right: BorderSide(color: AppColors.border, width: .5)),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(right: BorderSide(color: colors.border, width: .5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -30,20 +32,20 @@ class SideRail extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7C75FF), Color(0xFF5A54CC)],
+                gradient: LinearGradient(
+                  colors: [colors.primary, colors.primaryGlow],
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.account_balance, size: 20, color: Colors.white),
             ),
           ),
-          const Divider(height: 1, color: AppColors.border, indent: 12, endIndent: 12),
+          Divider(height: 1, color: colors.border, indent: 12, endIndent: 12),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
-                children: items.asMap().entries.map((e) => _item(e.key, e.value)).toList(),
+                children: items.asMap().entries.map((e) => _item(e.key, e.value, colors)).toList(),
               ),
             ),
           ),
@@ -52,7 +54,7 @@ class SideRail extends StatelessWidget {
     );
   }
 
-  Widget _item(int index, NavItem item) {
+  Widget _item(int index, NavItem item, AppThemeColors colors) {
     final selected = index == selectedIndex;
     return Tooltip(
       message: item.label,
@@ -63,14 +65,14 @@ class SideRail extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: selected ? AppColors.primary.withValues(alpha: .15) : Colors.transparent,
+            color: selected ? colors.primary.withValues(alpha: .15) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Center(
             child: Icon(
               selected ? (item.activeIcon ?? item.icon) : item.icon,
               size: selected ? 22 : 20,
-              color: selected ? AppColors.primarySoft : AppColors.textTertiary,
+              color: selected ? colors.primarySoft : colors.textTertiary,
             ),
           ),
         ),

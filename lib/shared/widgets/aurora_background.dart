@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 class AuroraBackground extends StatefulWidget {
   const AuroraBackground({super.key});
@@ -48,57 +49,66 @@ class _AuroraBackgroundState extends State<AuroraBackground>
 
   @override
   Widget build(BuildContext context) {
-    final colors = [
-      const Color(0x3F7C75FF).withValues(alpha: .12), // primary purple
-      const Color(0x3F4ECDC4).withValues(alpha: .10), // teal
-      const Color(0x3F9D97FF).withValues(alpha: .08), // soft purple
-    ];
+    final colors = context.appColors;
 
     return Stack(
       children: [
-        // Base dark gradient
         Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF07070F),
-                Color(0xFF0C0C18),
-                Color(0xFF080812),
-              ],
+              colors: [colors.backgroundTop, colors.backgroundBottom, colors.backgroundTop],
             ),
           ),
         ),
-        // Animated colored blobs
-        ...List.generate(3, (i) {
-          return AnimatedBuilder(
-            animation: _controllers[i],
-            builder: (context, child) {
-              return Positioned(
-                left: _baseDx[i] + (_animations[i].value.dx * 300),
-                top: _baseDy[i] + (_animations[i].value.dy * 200),
-                child: Container(
-                  width: 250 + i * 50.0,
-                  height: 250 + i * 50.0,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [colors[i], Colors.transparent],
-                      stops: const [0.0, 1.0],
+        if (colors.useAurora) ...[
+          ...List.generate(3, (i) {
+            return AnimatedBuilder(
+              animation: _controllers[i],
+              builder: (context, child) {
+                return Positioned(
+                  left: _baseDx[i] + (_animations[i].value.dx * 300),
+                  top: _baseDy[i] + (_animations[i].value.dy * 200),
+                  child: Container(
+                    width: 250 + i * 50.0,
+                    height: 250 + i * 50.0,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          i == 0 ? colors.primary.withValues(alpha: .12) :
+                          i == 1 ? colors.accent.withValues(alpha: .10) :
+                          colors.primarySoft.withValues(alpha: .08),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 1.0],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          );
-        }),
-        // Subtle noise/texture overlay
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: .30),
+                );
+              },
+            );
+          }),
+          Container(
+            decoration: BoxDecoration(
+              color: colors.backgroundTop.withValues(alpha: .30),
+            ),
           ),
-        ),
+        ] else ...[
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colors.surface.withValues(alpha: .15),
+                  colors.backgroundTop,
+                ],
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

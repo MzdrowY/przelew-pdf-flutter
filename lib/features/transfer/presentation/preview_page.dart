@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme_colors.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../core/utils/pdf_generator.dart';
@@ -137,8 +137,9 @@ class _PreviewPageState extends ConsumerState<PreviewPage> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
+      final colors = context.appColors;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Błąd: $e'), backgroundColor: AppColors.error),
+        SnackBar(content: Text('Błąd: $e'), backgroundColor: colors.error),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

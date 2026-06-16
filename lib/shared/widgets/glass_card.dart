@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 class GlassCard extends StatelessWidget {
   final Widget child;
@@ -20,6 +20,7 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final childWidget = Padding(
       padding: padding ?? const EdgeInsets.all(16),
       child: child,
@@ -36,10 +37,10 @@ class GlassCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(borderRadius),
-                gradient: const RadialGradient(
-                  center: Alignment(0.3, -0.5),
+                gradient: RadialGradient(
+                  center: const Alignment(0.3, -0.5),
                   radius: 0.8,
-                  colors: [Color(0x1A6C63FF), Colors.transparent],
+                  colors: [colors.primaryGlow.withValues(alpha: 0.10), Colors.transparent],
                 ),
               ),
             ),
@@ -47,27 +48,31 @@ class GlassCard extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(borderRadius),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            filter: ImageFilter.blur(sigmaX: colors.isDark ? 12 : 2, sigmaY: colors.isDark ? 12 : 2),
             child: Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.surface.withValues(alpha: 0.7),
-                    AppColors.surface.withValues(alpha: 0.4),
-                  ],
-                ),
+                color: colors.surface,
+                gradient: colors.isDark
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          colors.surface.withValues(alpha: 0.7),
+                          colors.surface.withValues(alpha: 0.4),
+                        ],
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(borderRadius),
                 border: Border.all(
-                  color: AppColors.border.withValues(alpha: 0.4),
+                  color: colors.border.withValues(alpha: 0.4),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.03),
-                    blurRadius: 20,
-                    spreadRadius: 1,
+                    color: colors.isDark ? colors.primary.withValues(alpha: 0.03) : colors.border.withValues(alpha: 0.5),
+                    blurRadius: colors.isDark ? 20 : 6,
+                    spreadRadius: colors.isDark ? 1 : 0,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
