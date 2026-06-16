@@ -1,0 +1,24 @@
+# Flutter/Dart
+build/
+.dart_tool/
+.packages
+.pub/
+pubspec.lock
+*.iml
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.pdf
+baza_odbiorcow.json
