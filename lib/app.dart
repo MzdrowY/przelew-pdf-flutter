@@ -3,12 +3,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_theme_mode.dart';
 import 'core/router/app_router.dart';
+import 'utils/window_utils.dart';
 
-class PrzelewPdfApp extends ConsumerWidget {
+class PrzelewPdfApp extends ConsumerStatefulWidget {
   const PrzelewPdfApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PrzelewPdfApp> createState() => _PrzelewPdfAppState();
+}
+
+class _PrzelewPdfAppState extends ConsumerState<PrzelewPdfApp> {
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual<AppThemeMode>(
+      appThemeModeProvider,
+      (previous, next) => WindowUtils.setTitleBarDarkMode(next == AppThemeMode.dark),
+    );
+    _updateTitleBar();
+  }
+
+  void _updateTitleBar() {
+    final themeMode = ref.read(appThemeModeProvider);
+    WindowUtils.setTitleBarDarkMode(themeMode == AppThemeMode.dark);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(appThemeModeProvider);
 
