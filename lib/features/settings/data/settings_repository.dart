@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 
@@ -41,23 +42,34 @@ class SettingsRepository {
   Future<void> addHistoryEntry(Map<String, String> entry) async {
     await _ensure();
     final history = _prefs!.getStringList('historia') ?? [];
-    history.insert(0, '${entry['data']}|${entry['odbiorca']}|${entry['konto']}|${entry['kwota']}');
+    history.insert(0, jsonEncode(entry));
     if (history.length > AppConstants.maxHistory) {
       history.removeRange(AppConstants.maxHistory, history.length);
     }
     await _prefs!.setStringList('historia', history);
   }
 
+  Future<void> clearAll() async {
+    await _ensure();
+    await _prefs!.clear();
+  }
+
   List<Map<String, String>> getHistory() {
     final history = _prefs?.getStringList('historia') ?? [];
     return history.map((e) {
-      final parts = e.split('|');
-      return {
-        'data': parts.isNotEmpty ? parts[0] : '',
-        'odbiorca': parts.length > 1 ? parts[1] : '',
-        'konto': parts.length > 2 ? parts[2] : '',
-        'kwota': parts.length > 3 ? parts[3] : '',
-      };
+      try {
+        final decoded = jsonDecode(e) as Map<String, dynamic>;
+        return decoded.map((key, value) => MapEntry(key, value.toString()));
+      } catch (_) {
+        // Backwards compatibility: old format used '|' as delimiter.
+        final parts = e.split('|');
+        return {
+          'data': parts.isNotEmpty ? parts[0] : '',
+          'odbiorca': parts.length > 1 ? parts[1] : '',
+          'konto': parts.length > 2 ? parts[2] : '',
+          'kwota': parts.length > 3 ? parts[3] : '',
+        };
+      }
     }).toList();
   }
 }

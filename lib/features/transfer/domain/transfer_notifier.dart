@@ -74,6 +74,28 @@ class TransferNotifier extends StateNotifier<TransferFormState> {
     );
   }
 
+  void loadFromHistory({
+    required String odbiorca,
+    required String odbiorcaCd,
+    required String konto,
+    required String waluta,
+    required String kwota,
+    required String tytul1,
+    required String tytul2,
+    required String odcinek,
+  }) {
+    state = TransferFormState(
+      odbiorca: odbiorca,
+      odbiorcaCd: odbiorcaCd,
+      konto: konto,
+      waluta: waluta,
+      kwota: kwota,
+      tytul1: tytul1,
+      tytul2: tytul2,
+      odcinek: odcinek,
+    );
+  }
+
   void reset() {
     state = const TransferFormState();
   }

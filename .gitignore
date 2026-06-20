@@ -22,3 +22,30 @@ Thumbs.db
 # Project specific
 *.pdf
 baza_odbiorcow.json
+kalibrator_state.json
+
+# Agent artifacts
+.claude-plugin/
+.cursor/
+CLAUDE.md
+CURSOR.md
+EXAMPLES.md
+README.zh.md
+
+# Python tools outputs
+tools/__pycache__/
+tools/*.png
+tools/*.json
+tools/wynik.png
+tools/*.pyc
+740-1034_0.png
+
+# Python venv
+.venv/
+venv/
+
+# Skills
+skills/
+
+# Installer output
+installer/*.exe

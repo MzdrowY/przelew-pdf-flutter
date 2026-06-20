@@ -48,7 +48,8 @@ void main() {
     });
 
     test('rounds grosze to 2 digits', () {
-      expect(kwotaSlownie('0,999'), 'zero złotych dziewięćdziesiąt dziewięć groszy');
+      expect(kwotaSlownie('0,995'), 'jeden złoty zero groszy');
+      expect(kwotaSlownie('0,994'), 'zero złotych dziewięćdziesiąt dziewięć groszy');
     });
   });
 }

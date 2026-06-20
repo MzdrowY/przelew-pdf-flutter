@@ -128,7 +128,7 @@ class _PayeeFormSheetState extends ConsumerState<PayeeFormSheet> {
     );
   }
 
-  void _save() {
+  void _save() async {
     if (!_formKey.currentState!.validate()) return;
 
     final kontoRaw = _kontoCtrl.text.replaceAll(RegExp(r'\s+'), '');
@@ -152,7 +152,7 @@ class _PayeeFormSheetState extends ConsumerState<PayeeFormSheet> {
       tytulCd: _tytulCdCtrl.text.trim(),
     );
 
-    ref.read(payeeStateProvider.notifier).save(payee);
-    Navigator.pop(context);
+    await ref.read(payeeStateProvider.notifier).save(payee);
+    if (mounted) Navigator.pop(context);
   }
 }

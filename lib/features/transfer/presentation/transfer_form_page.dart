@@ -9,6 +9,7 @@ import '../../../shared/widgets/side_rail.dart';
 import '../../payees/data/payee_model.dart';
 import '../../payees/domain/payee_notifier.dart';
 import '../../settings/domain/settings_notifier.dart';
+import '../data/transfer_repository.dart';
 import '../domain/transfer_notifier.dart';
 import 'widgets/calibration_section.dart';
 
@@ -32,7 +33,6 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
   late final TextEditingController _senderKontoCtrl;
   bool _wplataGotowkowa = true;
   String _odcinek = 'oba';
-  bool _senderInited = false;
 
   @override
   void initState() {
@@ -60,13 +60,40 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
     super.dispose();
   }
 
-  void _initSender(Map<String, dynamic> s) {
-    if (_senderInited) return;
-    _senderNazwaCtrl.text = s['nazwa'] as String? ?? '';
-    _senderAdresCtrl.text = s['adres'] as String? ?? '';
-    _senderKontoCtrl.text = s['konto_zleceniodawcy'] as String? ?? '';
-    _wplataGotowkowa = s['wplata_gotowkowa'] as bool? ?? true;
-    _senderInited = true;
+  void _syncSender(Map<String, dynamic> s) {
+    final nazwa = s['nazwa'] as String? ?? '';
+    final adres = s['adres'] as String? ?? '';
+    final konto = s['konto_zleceniodawcy'] as String? ?? '';
+    final wplata = s['wplata_gotowkowa'] as bool? ?? true;
+    if (_senderNazwaCtrl.text != nazwa) _senderNazwaCtrl.text = nazwa;
+    if (_senderAdresCtrl.text != adres) _senderAdresCtrl.text = adres;
+    if (_senderKontoCtrl.text != konto) _senderKontoCtrl.text = konto;
+    if (_wplataGotowkowa != wplata) _wplataGotowkowa = wplata;
+  }
+
+  void _syncFormFromState() {
+    final f = ref.read(transferFormProvider);
+    if (_odbiorcaCtrl.text != f.odbiorca) _odbiorcaCtrl.text = f.odbiorca;
+    if (_odbiorcaCdCtrl.text != f.odbiorcaCd) _odbiorcaCdCtrl.text = f.odbiorcaCd;
+    if (_kontoCtrl.text != f.konto) _kontoCtrl.text = f.konto;
+    if (_walutaCtrl.text != f.waluta) _walutaCtrl.text = f.waluta;
+    if (_kwotaCtrl.text != f.kwota) _kwotaCtrl.text = f.kwota;
+    if (_tytul1Ctrl.text != f.tytul1) _tytul1Ctrl.text = f.tytul1;
+    if (_tytul2Ctrl.text != f.tytul2) _tytul2Ctrl.text = f.tytul2;
+    if (_odcinek != f.odcinek) _odcinek = f.odcinek;
+  }
+
+  void _loadFromHistory(Map<String, String> entry) {
+    ref.read(transferFormProvider.notifier).loadFromHistory(
+      odbiorca: entry['odbiorca'] ?? '',
+      odbiorcaCd: entry['odbiorcaCd'] ?? '',
+      konto: entry['konto'] ?? '',
+      waluta: entry['waluta'] ?? 'PLN',
+      kwota: entry['kwota'] ?? '',
+      tytul1: entry['tytul1'] ?? '',
+      tytul2: entry['tytul2'] ?? '',
+      odcinek: entry['odcinek'] ?? 'oba',
+    );
   }
 
   void _saveSender() {
@@ -81,7 +108,9 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
     final colors = context.appColors;
     final settings = ref.watch(settingsStateProvider);
     final history = ref.watch(historyListProvider);
-    _initSender(settings);
+    ref.watch(transferFormProvider);
+    _syncSender(settings);
+    _syncFormFromState();
 
     return Scaffold(
       body: Row(
@@ -199,6 +228,14 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
               if (alias == null) return; final p = payees[alias]; if (p == null) return;
               _odbiorcaCtrl.text = p.odbiorca; _odbiorcaCdCtrl.text = p.odbiorcaCd; _kontoCtrl.text = p.konto;
               _kwotaCtrl.text = p.kwota; _tytul1Ctrl.text = p.tytul; _tytul2Ctrl.text = p.tytulCd;
+              ref.read(transferFormProvider.notifier).loadFromPayee(
+                odbiorca: p.odbiorca,
+                odbiorcaCd: p.odbiorcaCd,
+                konto: p.konto,
+                kwota: p.kwota,
+                tytul1: p.tytul,
+                tytul2: p.tytulCd,
+              );
             },
           )
         else Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Text('Brak odbiorców — dodaj poniżej', style: Theme.of(context).textTheme.bodyMedium)),
@@ -212,26 +249,30 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _sectionHeader(Icons.receipt_long_outlined, 'Szczegóły przelewu', colors, TextButton(onPressed: _clearAll, child: const Text('Wyczyść', style: TextStyle(fontSize: 11)))),
         const SizedBox(height: 12),
-        _field(Icons.person_outline, 'Odbiorca (linia 1)', _odbiorcaCtrl, colors),
+        _field(Icons.person_outline, 'Odbiorca (linia 1)', _odbiorcaCtrl, colors, onChanged: (v) => ref.read(transferFormProvider.notifier).updateOdbiorca(v)),
         const SizedBox(height: 8),
-        _field(null, 'Odbiorca (linia 2)', _odbiorcaCdCtrl, colors),
+        _field(null, 'Odbiorca (linia 2)', _odbiorcaCdCtrl, colors, onChanged: (v) => ref.read(transferFormProvider.notifier).updateOdbiorcaCd(v)),
         const SizedBox(height: 8),
         _field(Icons.credit_card_outlined, 'Nr konta', _kontoCtrl, colors, onChanged: _formatIban),
         const SizedBox(height: 8),
         Row(children: [
-          Expanded(flex: 1, child: _field(Icons.currency_exchange_outlined, 'Waluta', _walutaCtrl, colors)),
+          Expanded(flex: 1, child: _field(Icons.currency_exchange_outlined, 'Waluta', _walutaCtrl, colors, onChanged: (v) => ref.read(transferFormProvider.notifier).updateWaluta(v))),
           const SizedBox(width: 8),
-          Expanded(flex: 2, child: _field(Icons.payments_outlined, 'Kwota', _kwotaCtrl, colors)),
+          Expanded(flex: 2, child: _field(Icons.payments_outlined, 'Kwota', _kwotaCtrl, colors, onChanged: (v) => ref.read(transferFormProvider.notifier).updateKwota(v))),
         ]),
         const SizedBox(height: 8),
-        _field(Icons.subject_outlined, 'Tytułem (linia 1)', _tytul1Ctrl, colors),
+        _field(Icons.subject_outlined, 'Tytułem (linia 1)', _tytul1Ctrl, colors, onChanged: (v) => ref.read(transferFormProvider.notifier).updateTytul1(v)),
         const SizedBox(height: 8),
-        _field(null, 'Tytułem (linia 2)', _tytul2Ctrl, colors),
+        _field(null, 'Tytułem (linia 2)', _tytul2Ctrl, colors, onChanged: (v) => ref.read(transferFormProvider.notifier).updateTytul2(v)),
         const SizedBox(height: 8),
         Row(children: [
-          Expanded(child: _actionBtn(Icons.bookmark_outline, 'Zapisz odbiorcę', colors, _odbiorcaCtrl.text.trim().isNotEmpty ? _quickSavePayee : null)),
+          Expanded(child: _actionBtn(Icons.bookmark_outline, 'Zapisz odbiorcę', colors, () => _quickSavePayee())),
           const SizedBox(width: 8),
           Expanded(child: _actionBtn(Icons.preview_outlined, 'Podgląd', colors, () => _validateAndProceed(context, ref.read(transferFormProvider), colors))),
+        ]),
+        const SizedBox(height: 8),
+        Row(children: [
+          Expanded(child: _actionBtn(Icons.delete_forever_outlined, 'Wyczyść wszystko', colors, _clearAll)),
         ]),
       ]),
     );
@@ -295,21 +336,37 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
   }
 
   Widget _buildHistorySection(List<Map<String, String>> history, AppThemeColors colors) {
+    final recent = history.take(5).toList();
     return AccentCard(
       accentColor: colors.success,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _sectionHeader(Icons.access_time, 'Ostatnie przelewy', colors),
         const SizedBox(height: 12),
-        ...history.take(5).map((e) => Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: colors.field, borderRadius: BorderRadius.circular(10), border: Border.all(color: colors.border.withValues(alpha: .2))),
-          child: Row(children: [
-            SizedBox(width: 70, child: Text(e['data'] ?? '', style: TextStyle(fontSize: 11, color: colors.textTertiary))),
-            Expanded(child: Text(e['odbiorca'] ?? '', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: colors.textPrimary), overflow: TextOverflow.ellipsis, maxLines: 1)),
-            Text(e['kwota'] ?? '', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.success)),
-          ]),
-        )),
+        ...recent.map((e) => Row(children: [
+          Expanded(child: GestureDetector(
+            onTap: () { _loadFromHistory(e); context.push('/preview'); },
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: colors.field, borderRadius: BorderRadius.circular(10), border: Border.all(color: colors.border.withValues(alpha: .2))),
+              child: Row(children: [
+                SizedBox(width: 70, child: Text(e['data'] ?? '', style: TextStyle(fontSize: 11, color: colors.textTertiary))),
+                Expanded(child: Text(e['odbiorca'] ?? '', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: colors.textPrimary), overflow: TextOverflow.ellipsis, maxLines: 1)),
+                Text(e['kwota'] ?? '', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.success)),
+              ]),
+            ),
+          )),
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: IconButton(
+              icon: Icon(Icons.edit, size: 14, color: colors.textTertiary),
+              onPressed: () { _loadFromHistory(e); },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: 'Edytuj w formularzu',
+            ),
+          ),
+        ])),
       ]),
     );
   }
@@ -374,30 +431,59 @@ class _TransferFormPageState extends ConsumerState<TransferFormPage> {
     final clean = v.replaceAll(RegExp(r'\s+'), '');
     if (clean.length == 26) {
       final fmt = IbanValidator.format(clean);
-      if (fmt != v) _kontoCtrl.value = TextEditingValue(text: fmt, selection: TextSelection.collapsed(offset: fmt.length));
+      if (fmt != v) {
+        _kontoCtrl.value = TextEditingValue(text: fmt, selection: TextSelection.collapsed(offset: fmt.length));
+        ref.read(transferFormProvider.notifier).updateKonto(fmt);
+        return;
+      }
     }
+    ref.read(transferFormProvider.notifier).updateKonto(v);
   }
 
-  void _clearAll() { _odbiorcaCtrl.clear(); _odbiorcaCdCtrl.clear(); _kontoCtrl.clear(); _walutaCtrl.text = 'PLN'; _kwotaCtrl.clear(); _tytul1Ctrl.clear(); _tytul2Ctrl.clear(); ref.read(transferFormProvider.notifier).reset(); }
+  void _clearAll() { _odbiorcaCtrl.clear(); _odbiorcaCdCtrl.clear(); _kontoCtrl.clear(); _walutaCtrl.clear(); _kwotaCtrl.clear(); _tytul1Ctrl.clear(); _tytul2Ctrl.clear(); setState(() => _odcinek = 'oba'); ref.read(transferFormProvider.notifier).reset(); }
 
-  void _quickSavePayee() {
+  void _quickSavePayee() async {
     final name = _odbiorcaCtrl.text.trim();
-    if (name.isEmpty) return;
+    if (name.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Wpisz nazwę odbiorcy przed zapisem'), duration: Duration(seconds: 2)),
+        );
+      }
+      return;
+    }
     final alias = name.length > 20 ? name.substring(0, 20).toUpperCase() : name.toUpperCase();
     final payee = PayeeModel(alias: alias, odbiorca: name, odbiorcaCd: _odbiorcaCdCtrl.text.trim(), konto: _kontoCtrl.text.replaceAll(RegExp(r'\s+'), ''), kwota: _kwotaCtrl.text.trim(), tytul: _tytul1Ctrl.text.trim(), tytulCd: _tytul2Ctrl.text.trim());
-    ref.read(payeeStateProvider.notifier).save(payee);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Odbiorca "$alias" zapisany', style: const TextStyle(fontSize: 12)), duration: const Duration(seconds: 2)));
+    try {
+      await ref.read(payeeStateProvider.notifier).save(payee);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Odbiorca "$alias" zapisany', style: const TextStyle(fontSize: 12)), duration: const Duration(seconds: 3)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Błąd zapisu: $e'), backgroundColor: context.appColors.error, duration: const Duration(seconds: 4)));
+      }
+    }
   }
 
   void _validateAndProceed(BuildContext context, TransferFormState form, AppThemeColors colors) {
     final errors = <String>[];
     if (form.odbiorca.trim().isEmpty) errors.add('Brak nazwy odbiorcy');
     final kontoRaw = form.konto.replaceAll(RegExp(r'\s+'), '');
-    if (kontoRaw.isNotEmpty) {
+    if (kontoRaw.isEmpty) {
+      errors.add('Brak numeru konta');
+    } else {
       final clean = kontoRaw.startsWith('PL') ? kontoRaw.substring(2) : kontoRaw;
       final (valid, _) = IbanValidator.validate(kontoRaw);
       if (!valid) { errors.add('Niepoprawny numer konta (26 cyfr)'); } else if (!IbanValidator.checkMod97(clean)) { errors.add('Cyfra kontrolna IBAN jest niepoprawna'); }
     }
+    final waluta = form.waluta.trim().toUpperCase();
+    if (waluta.isEmpty || waluta.length != 3 || !RegExp(r'^[A-Z]{3}$').hasMatch(waluta)) {
+      errors.add('Niepoprawna waluta (3 litery, np. PLN)');
+    }
+    final repo = ref.read(transferRepositoryProvider);
+    final (kwotaOk, _) = repo.validateKwota(form.kwota);
+    if (!kwotaOk) errors.add('Niepoprawna kwota (dodatnia liczba)');
     if (form.tytul1.trim().isEmpty && form.tytul2.trim().isEmpty) errors.add('Brak tytułu przelewu');
     if (errors.isNotEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errors.join('\n'), style: const TextStyle(fontSize: 12)), backgroundColor: colors.error, duration: const Duration(seconds: 4))); return; }
     HapticFeedback.mediumImpact();

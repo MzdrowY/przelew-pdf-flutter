@@ -4,7 +4,7 @@ class AppConstants {
   static const appName = 'Polecenie przelewu PDF';
   static const appVersion = '2.0.0';
 
-  static const maxHistory = 20;
+  static const maxHistory = 1000;
   static const defaultFontSize = 11.0;
   static const defaultShiftX = -2.0;
   static const defaultShiftY = -1.0;

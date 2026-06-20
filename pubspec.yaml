@@ -5,7 +5,7 @@ version: 2.0.0
 
 environment:
   sdk: ^3.5.0
-  flutter: ^3.24.0
+  flutter: ^3.27.0
 
 dependencies:
   flutter:
@@ -27,3 +27,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/fonts/cour.ttf
+    - assets/fonts/courbd.ttf
+    - assets/fonts/Roboto-Regular.ttf
+    - assets/images/blankiet.png

@@ -18,23 +18,50 @@ class PayeeModel {
   });
 
   Map<String, dynamic> toJson() => {
-    'odbiorca': [odbiorca, odbiorcaCd].where((e) => e.isNotEmpty).join('\n'),
+    'odbiorca': odbiorca,
+    'odbiorcaCd': odbiorcaCd,
     'konto': konto.replaceAll(RegExp(r'\s+'), ''),
     'kwota': kwota,
-    'tytul': [tytul, tytulCd].where((e) => e.isNotEmpty).join('\n'),
+    'tytul': tytul,
+    'tytulCd': tytulCd,
   };
 
   factory PayeeModel.fromJson(String alias, Map<String, dynamic> json) {
-    final odbLines = (json['odbiorca'] as String? ?? '').split('\n');
-    final tytLines = (json['tytul'] as String? ?? '').split('\n');
+    // New format stores lines separately; old format joined them with '\n'.
+    String odbiorca = '';
+    String odbiorcaCd = '';
+    if (json['odbiorca'] is String) {
+      final raw = json['odbiorca'] as String;
+      if (json['odbiorcaCd'] is String) {
+        odbiorca = raw;
+        odbiorcaCd = json['odbiorcaCd'] as String;
+      } else {
+        final lines = raw.split('\n');
+        odbiorca = lines.isNotEmpty ? lines[0] : '';
+        odbiorcaCd = lines.length > 1 ? lines[1] : '';
+      }
+    }
+    String tytul = '';
+    String tytulCd = '';
+    if (json['tytul'] is String) {
+      final raw = json['tytul'] as String;
+      if (json['tytulCd'] is String) {
+        tytul = raw;
+        tytulCd = json['tytulCd'] as String;
+      } else {
+        final lines = raw.split('\n');
+        tytul = lines.isNotEmpty ? lines[0] : '';
+        tytulCd = lines.length > 1 ? lines[1] : '';
+      }
+    }
     return PayeeModel(
       alias: alias,
-      odbiorca: odbLines.isNotEmpty ? odbLines[0] : '',
-      odbiorcaCd: odbLines.length > 1 ? odbLines[1] : '',
+      odbiorca: odbiorca,
+      odbiorcaCd: odbiorcaCd,
       konto: json['konto'] as String? ?? '',
       kwota: json['kwota'] as String? ?? '',
-      tytul: tytLines.isNotEmpty ? tytLines[0] : '',
-      tytulCd: tytLines.length > 1 ? tytLines[1] : '',
+      tytul: tytul,
+      tytulCd: tytulCd,
     );
   }
 }

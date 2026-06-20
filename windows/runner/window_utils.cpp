@@ -14,8 +14,7 @@ void RegisterWindowUtils(flutter::FlutterEngine* engine, HWND window_handle) {
   }
 
   static HWND g_window_handle = window_handle;
-
-  auto channel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+  static auto channel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
       engine->messenger(), "window_utils",
       &flutter::StandardMethodCodec::GetInstance());
 

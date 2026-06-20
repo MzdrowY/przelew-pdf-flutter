@@ -12,17 +12,17 @@ class PayeeRepository {
   }
 
   Future<Map<String, PayeeModel>> loadAll() async {
-    if (_cache != null) return _cache!;
+    if (_cache != null) return Map.unmodifiable(_cache!);
     final path = await _filePath;
     final file = File(path);
-    if (!await file.exists()) return {};
+    if (!await file.exists()) return const {};
     final content = await file.readAsString();
     final json = jsonDecode(content) as Map<String, dynamic>;
     _cache = json.map((key, value) => MapEntry(
       key.toUpperCase(),
       PayeeModel.fromJson(key.toUpperCase(), value as Map<String, dynamic>),
     ));
-    return _cache!;
+    return Map.unmodifiable(_cache!);
   }
 
   Future<List<String>> getAllAliases() async {
@@ -36,21 +36,20 @@ class PayeeRepository {
   }
 
   Future<void> save(PayeeModel payee) async {
-    final data = await loadAll();
-    data[payee.alias.toUpperCase()] = payee;
-    await _persist(data);
+    await loadAll();
+    _cache![payee.alias.toUpperCase()] = payee;
+    await _persist();
   }
 
   Future<void> delete(String alias) async {
-    final data = await loadAll();
-    data.remove(alias.toUpperCase());
-    await _persist(data);
+    await loadAll();
+    _cache!.remove(alias.toUpperCase());
+    await _persist();
   }
 
-  Future<void> _persist(Map<String, PayeeModel> data) async {
-    _cache = data;
+  Future<void> _persist() async {
     final path = await _filePath;
-    final json = data.map((key, value) => MapEntry(key, value.toJson()));
+    final json = _cache!.map((key, value) => MapEntry(key, value.toJson()));
     await File(path).writeAsString(jsonEncode(json));
   }
 }

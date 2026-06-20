@@ -5,11 +5,6 @@ final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   return SettingsRepository();
 });
 
-final settingsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final repo = ref.read(settingsRepositoryProvider);
-  return repo.load();
-});
-
 class SettingsNotifier extends StateNotifier<Map<String, dynamic>> {
   final SettingsRepository _repo;
   final Ref _ref;
@@ -31,6 +26,11 @@ class SettingsNotifier extends StateNotifier<Map<String, dynamic>> {
     _ref.invalidate(historyListProvider);
   }
 
+  Future<void> clearAll() async {
+    await _repo.clearAll();
+    state = {};
+  }
+
   List<Map<String, String>> getHistory() => _repo.getHistory();
 }
 
@@ -42,6 +42,7 @@ final settingsStateProvider = StateNotifierProvider<SettingsNotifier, Map<String
 });
 
 final historyListProvider = Provider<List<Map<String, String>>>((ref) {
+  ref.watch(settingsStateProvider);
   final repo = ref.read(settingsRepositoryProvider);
   return repo.getHistory();
 });

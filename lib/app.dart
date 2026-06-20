@@ -13,14 +13,22 @@ class PrzelewPdfApp extends ConsumerStatefulWidget {
 }
 
 class _PrzelewPdfAppState extends ConsumerState<PrzelewPdfApp> {
+  ProviderSubscription<AppThemeMode>? _themeSubscription;
+
   @override
   void initState() {
     super.initState();
-    ref.listenManual<AppThemeMode>(
+    _themeSubscription = ref.listenManual<AppThemeMode>(
       appThemeModeProvider,
       (previous, next) => WindowUtils.setTitleBarDarkMode(next == AppThemeMode.dark),
     );
     _updateTitleBar();
+  }
+
+  @override
+  void dispose() {
+    _themeSubscription?.close();
+    super.dispose();
   }
 
   void _updateTitleBar() {

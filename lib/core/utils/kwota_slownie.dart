@@ -48,10 +48,11 @@ String _liczba(int n) => n == 0 ? 'zero' : _slowa(n);
 
 String kwotaSlownie(String kwotaStr) {
   final clean = kwotaStr.replaceAll(',', '.').trim();
-  final parts = clean.split('.');
-  final zl = int.tryParse(parts[0]) ?? 0;
-  final grStr = parts.length > 1 ? parts[1].padRight(2, '0').substring(0, 2) : '00';
-  final gr = int.tryParse(grStr) ?? 0;
+  final parsed = double.tryParse(clean);
+  if (parsed == null || parsed < 0) return 'zero złotych zero groszy';
+  final totalGr = (parsed * 100).round();
+  final zl = totalGr ~/ 100;
+  final gr = totalGr % 100;
 
   final zlTxt = _liczba(zl);
   final grTxt = _liczba(gr);
