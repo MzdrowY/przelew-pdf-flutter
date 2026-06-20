@@ -1,7 +1,7 @@
 ; Inno Setup Script for PrzelewPDF
 ; Generates a Windows installer for the Flutter desktop application.
 
-#define MyAppName "PrzelewPDF"
+#define MyAppName "Polecenie Przelewu PDF"
 #define MyAppVersion "2.0.0"
 #define MyAppPublisher "PrzelewPDF"
 #define MyAppURL "https://przelewpdf.pl"
@@ -19,7 +19,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=.
-OutputBaseFilename=PrzelewPDF_Setup_v{#MyAppVersion}
+OutputBaseFilename=PoleceniePrzelewuPDF_v{#MyAppVersion}
 SetupIconFile=..\windows\runner\resources\app_icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2

@@ -154,7 +154,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               children: [
                 Text('O programie', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 12),
-                _aboutRow('Nazwa', 'PrzelewPDF'),
+                _aboutRow('Nazwa', 'Polecenie Przelewu PDF'),
                 _aboutRow('Wersja', '2.0.0'),
                 _aboutRow('Autor', 'MzdrowY'),
                 _aboutRow('Email', 'mzdrowy@gmail.com', isEmail: true),

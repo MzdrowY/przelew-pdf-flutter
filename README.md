@@ -1,4 +1,4 @@
-# PrzelewPDF
+# Polecenie Przelewu PDF
 
 Aplikacja desktopowa (Windows) do generowania wypełnionych poleceń przelewu / wpłat gotówkowych w PDF na oryginalnym blankiecie PPWG.
 
@@ -20,7 +20,7 @@ Aplikacja desktopowa (Windows) do generowania wypełnionych poleceń przelewu / 
 
 ### Opcja A: Instalator (zalecane)
 
-Pobierz `PrzelewPDF_Setup_v2.0.0.exe` z katalogu `installer/` i uruchom.
+Pobierz `PoleceniePrzelewuPDF_v2.0.0.exe` z katalogu `installer/` i uruchom.
 
 ### Opcja B: Budowa ze źródła
 
@@ -56,6 +56,8 @@ Pozycje pól możesz korygować w kalibratorze (zakładka Ustawienia → Kalibra
 ## Autor
 
 **MzdrowY** — mzdrowy@gmail.com
+
+Strona: [https://przelewpdf.pl](https://przelewpdf.pl)
 
 Zgłoszenia błędów, sugestie i pomysły: email lub Issues na GitHub.
 
