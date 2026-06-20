@@ -46,6 +46,3 @@ venv/
 
 # Skills
 skills/
-
-# Installer output
-installer/*.exe
