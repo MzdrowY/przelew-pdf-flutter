@@ -42,7 +42,7 @@ class _PrzelewPdfAppState extends ConsumerState<PrzelewPdfApp> {
     final themeMode = ref.watch(appThemeModeProvider);
 
     return MaterialApp.router(
-      title: 'Polecenie przelewu PDF',
+      title: 'Polecenie Przelewu PDF',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.forMode(themeMode),
       routerConfig: router,
